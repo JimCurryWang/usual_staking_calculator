@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USUAL/USUALx 質押計算器</title>
+    
+    <!-- 引入 React -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        const { createElement: h, useState } = React;
+        const { createRoot } = ReactDOM;
+
+        const Card = ({ children, className }) => 
+            h('div', { className: `bg-white shadow rounded-lg ${className || ''}` }, children);
+
+        const CardHeader = ({ children }) => 
+            h('div', { className: 'p-4 border-b' }, children);
+
+        const CardTitle = ({ children }) => 
+            h('h2', { className: 'text-xl font-bold' }, children);
+
+        const CardContent = ({ children }) => 
+            h('div', { className: 'p-4' }, children);
+
+        const ArrowRight = () => 
+            h('span', { className: 'text-blue-500' }, '→');
+
+        const ArrowDown = () => 
+            h('span', { className: 'text-yellow-500' }, '↓');
+
+        const UsualStakingCalculator = () => {
+            const [initialStake, setInitialStake] = useState(100);
+            const [initialRate, setInitialRate] = useState(0.95);
+            const [currentRate, setCurrentRate] = useState(0.90);
+
+            const usualxAmount = initialStake * initialRate;
+            const currentUsualValue = usualxAmount / currentRate;
+            const exitFee = currentUsualValue * 0.1;
+            const finalAmount = currentUsualValue - exitFee;
+            const profit = finalAmount - initialStake;
+
+            return h('div', { className: 'flex flex-col md:flex-row gap-6 p-4' },
+                // 固定比率計算器
+                h(Card, { className: 'w-full md:w-1/2' }, [
+                    h(CardHeader, null, 
+                        h(CardTitle, null, 'USUAL/USUALx 固定比率計算器')
+                    ),
+                    h(CardContent, null, 
+                        h('div', { className: 'space-y-6' }, [
+                            // 第一天計算
+                            h('div', { className: 'bg-blue-50 p-4 rounded-lg' }, [
+                                h('div', { className: 'text-lg mb-4' }, '第一天: 1 USUAL = 0.95 USUALx'),
+                                h('div', { className: 'flex items-center gap-4' }, [
+                                    h('div', { className: 'p-3 bg-white rounded shadow' }, '100 USUAL'),
+                                    h(ArrowRight),
+                                    h('div', { className: 'p-3 bg-white rounded shadow' }, '95 USUALx')
+                                ])
+                            ]),
+                            // 第 N 天計算
+                            h('div', { className: 'bg-green-50 p-4 rounded-lg' }, [
+                                h('div', { className: 'text-lg mb-4' }, '第 N 天: 1 USUAL = 0.90 USUALx'),
+                                h('div', { className: 'flex items-center gap-4' }, [
+                                    h('div', { className: 'p-3 bg-white rounded shadow' }, '95 USUALx'),
+                                    h(ArrowRight),
+                                    h('div', { className: 'p-3 bg-white rounded shadow' }, '105.50 USUAL (價值)')
+                                ])
+                            ]),
+                            // 退出計算
+                            h('div', { className: 'bg-yellow-50 p-4 rounded-lg' }, [
+                                h('div', { className: 'text-lg mb-4' }, '退出計算 (10% 費用)'),
+                                h('div', { className: 'space-y-4' }, [
+                                    h('div', { className: 'flex items-center gap-4' }, [
+                                        h('div', { className: 'p-3 bg-white rounded shadow' }, '總價值: 105.50 USUAL'),
+                                        h(ArrowDown)
+                                    ]),
+                                    h('div', { className: 'flex items-center gap-4' }, [
+                                        h('div', { className: 'p-3 bg-white rounded shadow text-red-500' }, '退出費用: -10.55 USUAL'),
+                                        h(ArrowDown)
+                                    ]),
+                                    h('div', { className: 'p-3 bg-green-100 rounded shadow font-bold' }, '最終獲得: 94.95 USUAL')
+                                ])
+                            ])
+                        ])
+                    )
+                ]),
+
+                // 自定義計算器
+                h(Card, { className: 'w-full md:w-1/2' }, [
+                    h(CardHeader, null, 
+                        h(CardTitle, null, '自定義質押比率計算器')
+                    ),
+                    h(CardContent, null, 
+                        h('div', { className: 'space-y-6' }, [
+                            // 輸入欄位
+                            h('div', { className: 'grid grid-cols-1 gap-4' }, [
+                                h('div', { className: 'space-y-2' }, [
+                                    h('label', { className: 'text-sm font-medium' }, '質押數量 (USUAL)'),
+                                    h('input', {
+                                        type: 'number',
+                                        value: initialStake,
+                                        onChange: (e) => setInitialStake(Number(e.target.value)),
+                                        className: 'w-full p-2 border rounded',
+                                        min: '0'
+                                    })
+                                ]),
+                                h('div', { className: 'space-y-2' }, [
+                                    h('label', { className: 'text-sm font-medium' }, '質押時比率 (如: 0.95)'),
+                                    h('input', {
+                                        type: 'number',
+                                        value: initialRate,
+                                        onChange: (e) => setInitialRate(Number(e.target.value)),
+                                        className: 'w-full p-2 border rounded',
+                                        step: '0.01',
+                                        min: '0',
+                                        max: '1'
+                                    })
+                                ]),
+                                h('div', { className: 'space-y-2' }, [
+                                    h('label', { className: 'text-sm font-medium' }, '當前比率 (如: 0.90)'),
+                                    h('input', {
+                                        type: 'number',
+                                        value: currentRate,
+                                        onChange: (e) => setCurrentRate(Number(e.target.value)),
+                                        className: 'w-full p-2 border rounded',
+                                        step: '0.01',
+                                        min: '0',
+                                        max: '1'
+                                    })
+                                ])
+                            ]),
+                            // 結果顯示
+                            h('div', { className: 'bg-gray-50 p-4 rounded-lg space-y-4' }, [
+                                h('div', { className: 'grid grid-cols-1 gap-4' }, [
+                                    h('div', { className: 'p-3 bg-white rounded shadow' }, 
+                                        `獲得USUALx: ${usualxAmount.toFixed(2)} USUALx`
+                                    ),
+                                    h('div', { className: 'p-3 bg-white rounded shadow' }, 
+                                        `當前價值: ${currentUsualValue.toFixed(2)} USUAL`
+                                    ),
+                                    h('div', { className: 'p-3 bg-white rounded shadow text-red-500' }, 
+                                        `退出費用: ${exitFee.toFixed(2)} USUAL`
+                                    ),
+                                    h('div', { className: 'p-3 bg-white rounded shadow' }, 
+                                        `最終獲得: ${finalAmount.toFixed(2)} USUAL`
+                                    )
+                                ]),
+                                h('div', { 
+                                    className: `p-3 rounded shadow font-bold text-center ${profit >= 0 ? 'bg-green-100' : 'bg-red-100'}` 
+                                }, 
+                                    `收益: ${profit.toFixed(2)} USUAL (${((profit/initialStake)*100).toFixed(2)}%)`
+                                )
+                            ])
+                        ])
+                    )
+                ])
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(h(UsualStakingCalculator));
+    </script>
+</body>
+</html>
